@@ -1,0 +1,15 @@
+{
+  "status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Request-Id": "req_9f1c2e7a",
+    "X-RateLimit-Limit": "5",
+    "X-RateLimit-Remaining": "4",
+    "X-RateLimit-Reset": "1"
+  },
+  "body": {
+    "url": "https://example.org/plain",
+    "content": "Plain.",
+    "truncated": true
+  }
+}

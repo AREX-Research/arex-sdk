@@ -1,0 +1,68 @@
+{
+	"name": "@arex-research/ts-sdk",
+	"version": "1.0.0",
+	"description": "TypeScript SDK for the AREX public APIs.",
+	"license": "Apache-2.0",
+	"type": "module",
+	"types": "./dist/index.d.ts",
+	"module": "./dist/index.js",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"sideEffects": false,
+	"engines": {
+		"node": ">=20"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AREX-Research/arex-sdk.git",
+		"directory": "ts"
+	},
+	"homepage": "https://github.com/AREX-Research/arex-sdk/tree/main/ts",
+	"bugs": {
+		"url": "https://github.com/AREX-Research/arex-sdk/issues"
+	},
+	"keywords": [
+		"arex",
+		"search",
+		"contents",
+		"research",
+		"sdk"
+	],
+	"scripts": {
+		"generate:wire": "tsx scripts/generate-wire.ts",
+		"build": "node --input-type=module -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.build.json",
+		"typecheck": "tsc --noEmit",
+		"lint": "biome check .",
+		"format": "biome check --write .",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:live": "vitest run --config vitest.live.config.ts",
+		"check:generated": "tsx scripts/generate-wire.ts --check",
+		"check:package": "node scripts/check-package.mjs",
+		"example:basic": "tsx examples/basic.ts",
+		"example:research": "tsx examples/research.ts",
+		"prepack": "npm run build",
+		"version": "changeset version"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.10",
+		"@changesets/cli": "^2.29.8",
+		"@types/node": "^22.20.1",
+		"openapi-typescript": "^7.13.0",
+		"tsx": "^4.23.12",
+		"typescript": "^5.9.3",
+		"vitest": "^3.2.7"
+	}
+}

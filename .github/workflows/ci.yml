@@ -1,0 +1,179 @@
+name: CI
+
+# Each SDK is built into its release artifacts once (`ts-package`,
+# `python-package`), checked as a consumer would install them, and those exact
+# files are then smoke-tested across the supported runtimes. The jobs that run
+# the test suites per Node/Python version never rebuild the package.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Public pull requests only ever need to read the repository.
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    # paths-filter lists changed files through the API on pull requests.
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      ts: ${{ steps.filter.outputs.ts }}
+      python: ${{ steps.filter.outputs.python }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            ts:
+              - 'ts/**'
+              - 'fixtures/**'
+              - 'openapi/**'
+              - '.github/workflows/**'
+              - 'LICENSE'
+            python:
+              - 'python/**'
+              - 'fixtures/**'
+              - 'openapi/**'
+              - '.github/workflows/**'
+              - 'LICENSE'
+
+  ts-package:
+    needs: changes
+    if: needs.changes.outputs.ts == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ts/package-lock.json
+      - run: npm ci
+      - name: Generated wire types are fresh
+        run: npm run check:generated
+      - run: npm run lint
+      - run: npm run typecheck
+      # `npm pack` runs the prepack build, so this is the only TypeScript build.
+      - name: Pack the tarball
+        run: |
+          mkdir -p "$RUNNER_TEMP/ts-package"
+          npm pack --pack-destination "$RUNNER_TEMP/ts-package"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ts-package
+          path: ${{ runner.temp }}/ts-package/*.tgz
+          if-no-files-found: error
+          retention-days: 7
+
+  ts-node:
+    needs: [changes, ts-package]
+    if: needs.changes.outputs.ts == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22, 24]
+    defaults:
+      run:
+        working-directory: ts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: ts/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - uses: actions/download-artifact@v4
+        with:
+          name: ts-package
+          path: ${{ runner.temp }}/ts-package
+      - name: Check the packed tarball under Node ${{ matrix.node }}
+        run: node scripts/check-package.mjs "$RUNNER_TEMP"/ts-package/*.tgz --runtime node
+
+  ts-bun:
+    needs: [changes, ts-package]
+    if: needs.changes.outputs.ts == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ts
+    steps:
+      - uses: actions/checkout@v4
+      # Node only drives the checker; the install and the smoke run under Bun.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/download-artifact@v4
+        with:
+          name: ts-package
+          path: ${{ runner.temp }}/ts-package
+      - name: Check the packed tarball under Bun
+        run: |
+          bun --version
+          node scripts/check-package.mjs "$RUNNER_TEMP"/ts-package/*.tgz --runtime bun
+
+  python-package:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen
+      - name: Generated wire types are fresh
+        run: uv run python scripts/generate_wire.py --check
+      - name: Build the wheel and sdist
+        run: uv build --out-dir "$RUNNER_TEMP/python-dist"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: |
+            ${{ runner.temp }}/python-dist/*.whl
+            ${{ runner.temp }}/python-dist/*.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+
+  python:
+    needs: [changes, python-package]
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.12", "3.13"]
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run pytest
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: ${{ runner.temp }}/python-dist
+      - name: Check the built wheel and sdist on Python ${{ matrix.python }}
+        run: uv run python scripts/check_package.py "$RUNNER_TEMP"/python-dist/*

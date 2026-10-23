@@ -1,0 +1,24 @@
+{
+  "status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Request-Id": "req_9f1c2e7a",
+    "X-RateLimit-Limit": "5",
+    "X-RateLimit-Remaining": "4",
+    "X-RateLimit-Reset": "1"
+  },
+  "body": {
+    "results": [
+      {
+        "title": "AI agent evaluation survey",
+        "url": "https://example.org/agents",
+        "snippet": "A survey of evaluation methods.",
+        "published_at": "2026-09-01T00:00:00.000Z"
+      },
+      {
+        "title": "Untitled result",
+        "url": "https://example.org/no-snippet"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "status": 429,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Request-Id": "req_9f1c2e7a",
+    "Retry-After": "86400"
+  },
+  "body": {
+    "error": {
+      "code": "weekly_credits_exhausted",
+      "message": "The weekly usage allowance is exhausted.",
+      "retryable": false,
+      "request_id": "req_9f1c2e7a"
+    }
+  }
+}

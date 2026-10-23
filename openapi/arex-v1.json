@@ -1,0 +1,3651 @@
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "AREX Public API",
+    "version": "1.0.0",
+    "description": "JSON fields and error codes use snake_case; durations carry units and timestamps use _at. Errors use {error:{code,message,retryable,request_id,param?}}. retryable means a transient failure."
+  },
+  "servers": [
+    {
+      "url": "https://api.arex-research.com"
+    }
+  ],
+  "security": [
+    {
+      "bearer": []
+    }
+  ],
+  "paths": {
+    "/v1/search": {
+      "post": {
+        "operationId": "search",
+        "description": "Find web pages matching a query. Returns up to limit ranked results, each with a title, URL, and optional snippet and published_at timestamp, for locating specific pages, documentation, or candidate sources; optional published_after and published_before bound publication time.",
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "description": "A matching value is echoed; invalid values are replaced by a UUID.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            }
+          }
+        ],
+        "x-arex-visibility": "public",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, content_blocked",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "invalid_request",
+              "content_blocked"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_request",
+                                "content_blocked"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "unauthorized"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "registration_required, account_deletion_pending",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "registration_required",
+              "account_deletion_pending"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "registration_required",
+                                "account_deletion_pending"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "method_not_allowed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "method_not_allowed"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "method_not_allowed"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limit_exceeded, daily_credits_exhausted, weekly_credits_exhausted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "rate_limit_exceeded",
+              "daily_credits_exhausted",
+              "weekly_credits_exhausted"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "rate_limit_exceeded",
+                                "daily_credits_exhausted",
+                                "weekly_credits_exhausted"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "internal_error"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "temporarily_unavailable",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "temporarily_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "temporarily_unavailable"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/contents": {
+      "post": {
+        "operationId": "contents",
+        "description": "Extract clean Markdown text and metadata from one public HTTP(S) page. content holds at most max_characters and truncated reports whether more exists; title, published_at and image URLs are included when known. tier is auto or flex (flex may take longer); livecrawl forces a fresh crawl instead of cached content.",
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "description": "A matching value is echoed; invalid values are replaced by a UUID.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            }
+          }
+        ],
+        "x-arex-visibility": "public",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, content_blocked",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "invalid_request",
+              "content_blocked"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_request",
+                                "content_blocked"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "unauthorized"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "registration_required, account_deletion_pending",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "registration_required",
+              "account_deletion_pending"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "registration_required",
+                                "account_deletion_pending"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "method_not_allowed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "method_not_allowed"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "method_not_allowed"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "source_not_available",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "source_not_available"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "source_not_available"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limit_exceeded, daily_credits_exhausted, weekly_credits_exhausted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "rate_limit_exceeded",
+              "daily_credits_exhausted",
+              "weekly_credits_exhausted"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "rate_limit_exceeded",
+                                "daily_credits_exhausted",
+                                "weekly_credits_exhausted"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "internal_error"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "temporarily_unavailable",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "temporarily_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "temporarily_unavailable"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/research": {
+      "post": {
+        "operationId": "createResearchRun",
+        "description": "Start a Research Run that researches a natural-language query across multiple web sources and returns a synthesized answer with cited sources (well-suited for open-ended, comparative, or recent-developments questions). By default, fast Runs wait up to 20 seconds to return a terminal Run (200 with status completed, failed or cancelled), while deep Runs and Runs still in progress return 202 with status queued or running and message; pass Prefer: respond-async to return 202 immediately after admission. When status is queued or running, poll GET /v1/research/{id} until status is completed (result holds answer and sources), failed or cancelled. mode defaults to auto (recommended), which routes between fast and deep from the query; fast or deep can be specified when needed.",
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "description": "A matching value is echoed; invalid values are replaced by a UUID.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            }
+          },
+          {
+            "name": "Prefer",
+            "in": "header",
+            "required": false,
+            "description": "RFC 7240 processing preference: respond-async returns 202 immediately after admission; wait=N bounds synchronous waiting to N seconds (capped at 20 seconds).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "x-arex-visibility": "public",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResearchCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchRun"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted; asynchronous work is pending.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request, content_blocked",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "invalid_request",
+              "content_blocked"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_request",
+                                "content_blocked"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "unauthorized"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "registration_required, account_deletion_pending",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "registration_required",
+              "account_deletion_pending"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "registration_required",
+                                "account_deletion_pending"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "method_not_allowed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "method_not_allowed"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "method_not_allowed"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limit_exceeded, daily_credits_exhausted, weekly_credits_exhausted, outstanding_run_limit",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "rate_limit_exceeded",
+              "daily_credits_exhausted",
+              "weekly_credits_exhausted",
+              "outstanding_run_limit"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "rate_limit_exceeded",
+                                "daily_credits_exhausted",
+                                "weekly_credits_exhausted",
+                                "outstanding_run_limit"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "internal_error"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "temporarily_unavailable",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "temporarily_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "temporarily_unavailable"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/research/{id}": {
+      "get": {
+        "operationId": "getResearchRun",
+        "description": "Read a Research Run created with the same API key. queued and running are not final: read it again until status is completed, failed or cancelled.",
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "description": "A matching value is echoed; invalid values are replaced by a UUID.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "x-arex-visibility": "public",
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_request"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "unauthorized"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "registration_required, account_deletion_pending",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "registration_required",
+              "account_deletion_pending"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "registration_required",
+                                "account_deletion_pending"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "not_found"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "method_not_allowed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "method_not_allowed"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "method_not_allowed"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limit_exceeded",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "rate_limit_exceeded"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "rate_limit_exceeded"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "internal_error"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "temporarily_unavailable",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "temporarily_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "temporarily_unavailable"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteResearchRun",
+        "description": "Delete a Research Run created with the same API key. Returns 204 once deleted; a Run that is still running is cancelled first and returns 202 with the Run until deletion completes.",
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "description": "A matching value is echoed; invalid values are replaced by a UUID.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "x-arex-visibility": "public",
+        "responses": {
+          "202": {
+            "description": "Accepted; asynchronous work is pending.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchRun"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Deleted; no response body.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_request"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "unauthorized"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "registration_required, account_deletion_pending",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "registration_required",
+              "account_deletion_pending"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "registration_required",
+                                "account_deletion_pending"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "not_found"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "method_not_allowed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "method_not_allowed"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "method_not_allowed"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limit_exceeded",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "rate_limit_exceeded"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "rate_limit_exceeded"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "internal_error"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "temporarily_unavailable",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "temporarily_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "temporarily_unavailable"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/research/{id}/cancel": {
+      "post": {
+        "operationId": "cancelResearchRun",
+        "description": "Cancel a queued or running Research Run created with the same API key. 202 means cancellation is still in progress; run_not_cancellable means the Run already ended.",
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "description": "A matching value is echoed; invalid values are replaced by a UUID.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "x-arex-visibility": "public",
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchRun"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted; asynchronous work is pending.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "invalid_request"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_request"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "unauthorized"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "unauthorized"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "registration_required, account_deletion_pending",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "registration_required",
+              "account_deletion_pending"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "registration_required",
+                                "account_deletion_pending"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "not_found"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "not_found"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "method_not_allowed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "method_not_allowed"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "method_not_allowed"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "run_not_cancellable",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "run_not_cancellable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "run_not_cancellable"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limit_exceeded",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "rate_limit_exceeded"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "rate_limit_exceeded"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "internal_error"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "internal_error"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "temporarily_unavailable",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "Preference-Applied": {
+                "$ref": "#/components/headers/Preference-Applied"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "x-arex-error-codes": [
+              "temporarily_unavailable"
+            ],
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "properties": {
+                        "error": {
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "temporarily_unavailable"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "AREX API key (sk_arex_...)."
+      }
+    },
+    "headers": {
+      "X-Request-Id": {
+        "description": "Echoed valid request ID, otherwise a fresh UUID; also error.request_id.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "X-RateLimit-Limit": {
+        "description": "Authenticated request window limit. May be omitted.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "X-RateLimit-Remaining": {
+        "description": "Requests remaining in the window. May be omitted.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "X-RateLimit-Reset": {
+        "description": "Integer seconds until the request window resets. May be omitted.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "Location": {
+        "description": "Canonical resource path for the created or polled Run.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "Preference-Applied": {
+        "description": "Echoed RFC 7240 preference applied by the server (respond-async or wait=N).",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "Retry-After": {
+        "description": "Delta seconds before retrying on 429 or 503; may also indicate an asynchronous polling interval.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "WWW-Authenticate": {
+        "description": "Bearer authentication challenge on 401.",
+        "schema": {
+          "type": "string",
+          "const": "Bearer"
+        }
+      }
+    },
+    "schemas": {
+      "SearchRequest": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query used to find matching web pages.",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 10
+          },
+          "published_after": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Optional UTC ISO 8601 date-time lower bound (for example 2026-09-21T00:00:00Z)."
+          },
+          "published_before": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Optional UTC ISO 8601 date-time upper bound (for example 2026-10-21T23:59:59Z)."
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "SearchResponse": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "snippet": {
+                  "type": "string"
+                },
+                "published_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "title",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "additionalProperties": false
+      },
+      "ContentsRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Absolute HTTP(S) URL without username or password.",
+            "maxLength": 8192,
+            "format": "uri",
+            "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://[^/@?#]+(?:[/?#]|$)"
+          },
+          "tier": {
+            "enum": [
+              "auto",
+              "flex"
+            ],
+            "type": "string",
+            "default": "auto"
+          },
+          "livecrawl": {
+            "type": "boolean",
+            "default": false
+          },
+          "livecrawl_timeout_ms": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 90000
+          },
+          "max_characters": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 131072,
+            "default": 12000
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "if": {
+          "required": [
+            "livecrawl_timeout_ms"
+          ]
+        },
+        "then": {
+          "required": [
+            "livecrawl"
+          ],
+          "properties": {
+            "livecrawl": {
+              "const": true
+            }
+          }
+        }
+      },
+      "ContentsResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "published_at": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          },
+          "image_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50
+          },
+          "content": {
+            "type": "string"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "url",
+          "content",
+          "truncated"
+        ],
+        "additionalProperties": false
+      },
+      "ResearchCreateRequest": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Complete natural-language question or research topic (including all compared entities, context, and constraints) to answer with cited web sources.",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "mode": {
+            "enum": [
+              "auto",
+              "fast",
+              "deep"
+            ],
+            "type": "string",
+            "description": "Defaults to auto (leave unset for both simple and complex questions). Set fast or deep when the user's prompt explicitly requests fast or deep mode.",
+            "default": "auto"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "ResearchRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "failed",
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "fast",
+              "deep"
+            ],
+            "type": "string"
+          },
+          "requested_mode": {
+            "enum": [
+              "auto",
+              "fast",
+              "deep"
+            ],
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "answer": {
+                "type": "string"
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "url"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "answer",
+              "sources"
+            ],
+            "additionalProperties": false
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "enum": [
+                  "timeout",
+                  "execution_failed",
+                  "worker_unavailable",
+                  "interrupted"
+                ],
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "code",
+              "retryable"
+            ],
+            "additionalProperties": false
+          },
+          "message": {
+            "type": "string",
+            "description": "Informational English polling guidance present when status is queued or running; omitted on terminal states. Clients branch on status rather than parsing this text."
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "mode",
+          "requested_mode",
+          "created_at"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "result"
+              ]
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": "completed"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "error"
+              ]
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "const": "failed"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "message"
+              ]
+            },
+            "then": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "queued",
+                    "running"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "enum": [
+                  "invalid_request",
+                  "content_blocked",
+                  "unauthorized",
+                  "registration_required",
+                  "account_deletion_pending",
+                  "not_found",
+                  "method_not_allowed",
+                  "run_not_cancellable",
+                  "source_not_available",
+                  "rate_limit_exceeded",
+                  "outstanding_run_limit",
+                  "daily_credits_exhausted",
+                  "weekly_credits_exhausted",
+                  "internal_error",
+                  "temporarily_unavailable"
+                ],
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              },
+              "request_id": {
+                "type": "string"
+              },
+              "param": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable",
+              "request_id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

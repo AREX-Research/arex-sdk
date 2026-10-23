@@ -1,0 +1,15 @@
+{
+  "status": 500,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Request-Id": "req_9f1c2e7a"
+  },
+  "body": {
+    "error": {
+      "code": "internal_error",
+      "message": "Internal error.",
+      "retryable": true,
+      "request_id": "req_9f1c2e7a"
+    }
+  }
+}

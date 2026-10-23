@@ -1,0 +1,19 @@
+{
+  "status": 429,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Request-Id": "req_9f1c2e7a",
+    "Retry-After": "1",
+    "X-RateLimit-Limit": "5",
+    "X-RateLimit-Remaining": "0",
+    "X-RateLimit-Reset": "1"
+  },
+  "body": {
+    "error": {
+      "code": "rate_limit_exceeded",
+      "message": "Rate limit exceeded.",
+      "retryable": true,
+      "request_id": "req_9f1c2e7a"
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"types": ["node"],
+		"outDir": "dist",
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitOverride": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
+		"moduleDetection": "force",
+		"skipLibCheck": true,
+		"noEmit": true,
+		"paths": {
+			"@arex-research/ts-sdk": ["./src/index.ts"]
+		}
+	},
+	"include": [
+		"src",
+		"tests",
+		"examples",
+		"vitest.config.ts",
+		"vitest.live.config.ts"
+	]
+}

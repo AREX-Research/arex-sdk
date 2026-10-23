@@ -1,0 +1,21 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.tgz
+.DS_Store
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Manual release fallback artifacts and reports
+.release-local/

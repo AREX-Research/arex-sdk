@@ -1,0 +1,16 @@
+{
+  "status": 503,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Request-Id": "req_9f1c2e7a",
+    "Retry-After": "5"
+  },
+  "body": {
+    "error": {
+      "code": "temporarily_unavailable",
+      "message": "Temporarily unavailable.",
+      "retryable": true,
+      "request_id": "req_9f1c2e7a"
+    }
+  }
+}

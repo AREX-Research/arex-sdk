@@ -1,0 +1,338 @@
+name: Release SDKs
+
+# Build once, smoke-test the exact files, then optionally publish without repacking.
+# Registry jobs have OIDC permission but never check out or execute package code.
+# Dispatch from main; its immutable SHA identifies both workflow and package source.
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to npm, PyPI and GitHub Releases (otherwise only build and test)"
+        type: boolean
+        required: true
+        default: false
+
+concurrency:
+  group: release-sdks
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      sha: ${{ steps.release.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ts/package-lock.json
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      # Before the build, so a version clash costs seconds rather than minutes.
+      - name: Resolve the version to release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH: ${{ inputs.publish }}
+        run: |
+          ts_version=$(node -p "require('./ts/package.json').version")
+          py_version=$(cd python && uv version --short)
+          if [ "$ts_version" != "$py_version" ]; then
+            echo "::error::ts/package.json is $ts_version but python/pyproject.toml is $py_version. One release names both packages, so the two versions must match."
+            exit 1
+          fi
+          if [ "$PUBLISH" = true ] && gh release view "$ts_version" >/dev/null 2>&1; then
+            echo "::error::Release $ts_version already exists. Bump the version in ts/package.json and python/pyproject.toml before building again."
+            exit 1
+          fi
+          if [ "$PUBLISH" = true ] && git show-ref --verify --quiet "refs/tags/$ts_version"; then
+            echo "::error::Tag $ts_version already exists without a release. Bump the version, or delete the stale tag."
+            exit 1
+          fi
+          {
+            echo "version=$ts_version"
+            echo "sha=$(git rev-parse HEAD)"
+            echo "previous=$(git tag --sort=-creatordate | head -n 1)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Verify and pack the TypeScript SDK
+        working-directory: ts
+        run: |
+          npm ci
+          npm run check:generated
+          npm run lint
+          npm run typecheck
+          npm test
+          # The prepack hook runs the one TypeScript build.
+          mkdir -p "$RUNNER_TEMP/release/files"
+          npm pack --pack-destination "$RUNNER_TEMP/release/files"
+
+      - name: Verify and build the Python SDK
+        working-directory: python
+        run: |
+          uv sync --frozen
+          uv run python scripts/generate_wire.py --check
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy
+          uv run pytest
+          uv build --out-dir "$RUNNER_TEMP/release/files"
+
+      - name: Record the checksums and release notes
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          PREVIOUS: ${{ steps.release.outputs.previous }}
+        run: |
+          ls -l "$RUNNER_TEMP/release/files"
+          (cd "$RUNNER_TEMP/release/files" && sha256sum -- * | tee ../SHA256SUMS)
+          {
+            echo "**Give your agents the power to search, read, and research the web, powered by AREX’s public API.**"
+            echo
+            echo "## Install"
+            echo
+            echo "### TypeScript"
+            echo
+            echo "From npm:"
+            echo
+            echo '```sh'
+            echo "npm install @arex-research/ts-sdk@$VERSION"
+            echo '```'
+            echo
+            echo "Or download the .tgz asset below:"
+            echo
+            echo '```sh'
+            echo "npm install ./arex-research-ts-sdk-$VERSION.tgz"
+            echo '```'
+            echo
+            echo "### Python"
+            echo
+            echo "From PyPI:"
+            echo
+            echo '```sh'
+            echo "pip install arex-python-sdk==$VERSION"
+            echo '```'
+            echo
+            echo "Or download the .whl asset below:"
+            echo
+            echo '```sh'
+            echo "pip install ./arex_python_sdk-$VERSION-py3-none-any.whl"
+            echo '```'
+            echo
+            echo "## What's changed"
+            echo
+            git log --no-merges --pretty='- %s' ${PREVIOUS:+"$PREVIOUS..HEAD"}
+            if [ -n "$PREVIOUS" ]; then
+              echo
+              echo "**Full changelog**: https://github.com/$GITHUB_REPOSITORY/compare/$PREVIOUS...$VERSION"
+            fi
+          } > "$RUNNER_TEMP/release/notes.md"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}/release
+          if-no-files-found: error
+          retention-days: 7
+
+  smoke-node:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22, 24]
+    defaults:
+      run:
+        working-directory: ts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build.outputs.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: ts/package-lock.json
+      # Consumer type-checking uses this package's pinned TypeScript.
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}/release
+      - name: The files are the ones that were built
+        run: cd "$RUNNER_TEMP/release/files" && sha256sum --check ../SHA256SUMS
+      - name: Check the released tarball under Node ${{ matrix.node }}
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          node scripts/check-package.mjs "$RUNNER_TEMP"/release/files/*.tgz \
+            --runtime node --expected-version "$VERSION" \
+            --report "$RUNNER_TEMP/reports/ts-node-${{ matrix.node }}.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-ts-node-${{ matrix.node }}
+          path: ${{ runner.temp }}/reports
+          retention-days: 30
+
+  smoke-bun:
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build.outputs.sha }}
+      # Node only drives the checker; the install and the smoke run under Bun.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}/release
+      - name: The files are the ones that were built
+        run: cd "$RUNNER_TEMP/release/files" && sha256sum --check ../SHA256SUMS
+      - name: Check the released tarball under Bun
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          bun --version
+          node scripts/check-package.mjs "$RUNNER_TEMP"/release/files/*.tgz \
+            --runtime bun --expected-version "$VERSION" \
+            --report "$RUNNER_TEMP/reports/ts-bun.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-ts-bun
+          path: ${{ runner.temp }}/reports
+          retention-days: 30
+
+  smoke-python:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.12", "3.13"]
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build.outputs.sha }}
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python }}
+      # The checker type-checks a consumer module with the pinned mypy.
+      - run: uv sync --frozen
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}/release
+      - name: The files are the ones that were built
+        run: cd "$RUNNER_TEMP/release/files" && sha256sum --check ../SHA256SUMS
+      - name: Check the released wheel and sdist on Python ${{ matrix.python }}
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          uv run python scripts/check_package.py \
+            "$RUNNER_TEMP"/release/files/*.whl "$RUNNER_TEMP"/release/files/*.tar.gz \
+            --expected-version "$VERSION" \
+            --report "$RUNNER_TEMP/reports/python-${{ matrix.python }}.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-python-${{ matrix.python }}
+          path: ${{ runner.temp }}/reports
+          retention-days: 30
+
+  publish-npm:
+    if: inputs.publish
+    needs: [build, smoke-node, smoke-bun, smoke-python]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release
+      - run: cd release/files && sha256sum --check ../SHA256SUMS
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --global npm@11.16.0
+      - name: Publish the tested npm tarball using OIDC
+        run: npm publish release/files/*.tgz --access public --ignore-scripts --registry https://registry.npmjs.org/
+
+  publish-pypi:
+    if: inputs.publish
+    needs: [build, smoke-node, smoke-bun, smoke-python]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release
+      - name: Verify and select the Python distributions
+        run: |
+          (cd release/files && sha256sum --check ../SHA256SUMS)
+          mkdir dist
+          cp release/files/*.whl release/files/*.tar.gz dist/
+      - name: Publish the tested Python distributions using OIDC
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # A failed upload can leave just one of the two distributions published.
+          skip-existing: true
+
+  release:
+    if: inputs.publish
+    needs: [build, publish-npm, publish-pypi]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release
+      - name: The files are the ones that were smoke-tested
+        run: cd release/files && sha256sum --check ../SHA256SUMS
+      - name: Publish the artifacts to a release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ needs.build.outputs.sha }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          gh release create "$VERSION" release/files/* \
+            --target "$SHA" \
+            --title "$VERSION" \
+            --notes-file release/notes.md

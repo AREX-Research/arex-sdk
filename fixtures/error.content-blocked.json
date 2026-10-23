@@ -1,0 +1,15 @@
+{
+  "status": 400,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Request-Id": "req_9f1c2e7a"
+  },
+  "body": {
+    "error": {
+      "code": "content_blocked",
+      "message": "Content blocked.",
+      "retryable": false,
+      "request_id": "req_9f1c2e7a"
+    }
+  }
+}

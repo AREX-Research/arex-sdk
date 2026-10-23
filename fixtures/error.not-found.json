@@ -1,0 +1,15 @@
+{
+  "status": 404,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Request-Id": "req_9f1c2e7a"
+  },
+  "body": {
+    "error": {
+      "code": "not_found",
+      "message": "Not found.",
+      "retryable": false,
+      "request_id": "req_9f1c2e7a"
+    }
+  }
+}

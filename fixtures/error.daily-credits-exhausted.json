@@ -1,0 +1,16 @@
+{
+  "status": 429,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Request-Id": "req_9f1c2e7a",
+    "Retry-After": "3600"
+  },
+  "body": {
+    "error": {
+      "code": "daily_credits_exhausted",
+      "message": "The daily usage allowance is exhausted.",
+      "retryable": false,
+      "request_id": "req_9f1c2e7a"
+    }
+  }
+}

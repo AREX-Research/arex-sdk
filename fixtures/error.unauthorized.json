@@ -1,0 +1,16 @@
+{
+  "status": 401,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Request-Id": "req_9f1c2e7a",
+    "WWW-Authenticate": "Bearer"
+  },
+  "body": {
+    "error": {
+      "code": "unauthorized",
+      "message": "Unauthorized.",
+      "retryable": false,
+      "request_id": "req_9f1c2e7a"
+    }
+  }
+}
