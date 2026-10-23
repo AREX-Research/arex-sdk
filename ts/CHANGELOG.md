@@ -1,6 +1,6 @@
 # @arex-research/ts-sdk
 
-## 1.0.0
+## 1.0.1
 
 Initial release of the TypeScript client for the AREX public API.
 

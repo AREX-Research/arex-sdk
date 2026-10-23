@@ -1,6 +1,6 @@
 # arex-python-sdk
 
-## 1.0.0
+## 1.0.1
 
 Initial release of the Python client for the AREX public API.
 
