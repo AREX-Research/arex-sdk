@@ -129,7 +129,7 @@ export interface components {
             /** @default false */
             livecrawl?: boolean;
             livecrawl_timeout_ms?: number;
-            /** @default 12000 */
+            /** @default 20000 */
             max_characters?: number;
         };
         ContentsResponse: {
@@ -1533,8 +1533,8 @@ export const WIRE_LIMITS = {
 		},
 		"maxCharacters": {
 			"minimum": 1,
-			"maximum": 131072,
-			"default": 12000
+			"maximum": 600000,
+			"default": 20000
 		},
 		"livecrawlTimeoutMs": {
 			"minimum": 1000,

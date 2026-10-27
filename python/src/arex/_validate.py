@@ -1,13 +1,11 @@
-"""Validate requests before sending them using generated wire constraints."""
+"""Check the arguments a request is built from; the server owns its value limits."""
 
 from __future__ import annotations
 
 import re
 from datetime import datetime, timezone
-from typing import Any, get_args
 from urllib.parse import urlsplit
 
-from arex._wire import WIRE_LIMITS, ContentsTier, ResearchModeRequest
 from arex.errors import InvalidRequestError
 
 __all__ = [
@@ -30,24 +28,14 @@ _UTC_TIMESTAMP_PATTERN = re.compile(
 )
 
 
-def _integer(field: str, value: object, bounds: dict[str, Any]) -> None:
+def _integer(field: str, value: object) -> None:
     if not isinstance(value, int) or isinstance(value, bool):
         raise InvalidRequestError(f"{field} must be an integer.", param=field)
-    if not bounds["minimum"] <= value <= bounds["maximum"]:
-        raise InvalidRequestError(
-            f"{field} must be between {bounds['minimum']} and {bounds['maximum']}.",
-            param=field,
-        )
 
 
-def _query(value: str, bounds: dict[str, Any]) -> None:
-    if not isinstance(value, str) or not value.strip():
-        raise InvalidRequestError("query must be a non-empty string.", param="query")
-    # Python string lengths count Unicode code points rather than UTF-16 units.
-    if not bounds["minLength"] <= len(value) <= bounds["maxLength"]:
-        raise InvalidRequestError(
-            f"query must be at most {bounds['maxLength']} characters.", param="query"
-        )
+def _string(field: str, value: object) -> None:
+    if not isinstance(value, str):
+        raise InvalidRequestError(f"{field} must be a string.", param=field)
 
 
 def _utc_timestamp_seconds(field: str, value: object) -> int:
@@ -68,10 +56,9 @@ def validate_search(
     published_after: str | None = None,
     published_before: str | None = None,
 ) -> None:
-    bounds = WIRE_LIMITS["SearchRequest"]
-    _query(query, bounds["query"])
+    _string("query", query)
     if limit is not None:
-        _integer("limit", limit, bounds["limit"])
+        _integer("limit", limit)
     after_seconds = (
         _utc_timestamp_seconds("published_after", published_after)
         if published_after is not None
@@ -102,13 +89,7 @@ def validate_contents(
     livecrawl_timeout_ms: int | None,
     max_characters: int | None,
 ) -> None:
-    bounds = WIRE_LIMITS["ContentsRequest"]
-    if not isinstance(url, str) or not url.strip():
-        raise InvalidRequestError("url must be a non-empty string.", param="url")
-    if len(url) > bounds["url"]["maxLength"]:
-        raise InvalidRequestError(
-            f"url must be at most {bounds['url']['maxLength']} characters.", param="url"
-        )
+    _string("url", url)
     try:
         parts = urlsplit(url)
         valid_host = parts.hostname
@@ -120,8 +101,8 @@ def validate_contents(
         raise InvalidRequestError("url must be an absolute HTTP(S) URL.", param="url")
     if parts.username is not None or parts.password is not None:
         raise InvalidRequestError("url must not contain credentials.", param="url")
-    if tier is not None and tier not in get_args(ContentsTier):
-        raise InvalidRequestError("tier must be auto or flex.", param="tier")
+    if tier is not None:
+        _string("tier", tier)
     if livecrawl is not None and not isinstance(livecrawl, bool):
         raise InvalidRequestError("livecrawl must be a boolean.", param="livecrawl")
     if livecrawl_timeout_ms is not None:
@@ -130,19 +111,17 @@ def validate_contents(
                 "livecrawl_timeout_ms is only allowed with livecrawl=True.",
                 param="livecrawl_timeout_ms",
             )
-        _integer(
-            "livecrawl_timeout_ms", livecrawl_timeout_ms, bounds["livecrawl_timeout_ms"]
-        )
+        _integer("livecrawl_timeout_ms", livecrawl_timeout_ms)
     if max_characters is not None:
-        _integer("max_characters", max_characters, bounds["max_characters"])
+        _integer("max_characters", max_characters)
 
 
 def validate_research_create(
     query: str, mode: str | None, *, detach: bool = False
 ) -> None:
-    _query(query, WIRE_LIMITS["ResearchCreateRequest"]["query"])
-    if mode is not None and mode not in get_args(ResearchModeRequest):
-        raise InvalidRequestError("mode must be fast, deep or auto.", param="mode")
+    _string("query", query)
+    if mode is not None:
+        _string("mode", mode)
     if not isinstance(detach, bool):
         raise InvalidRequestError("detach must be a boolean.", param="detach")
 

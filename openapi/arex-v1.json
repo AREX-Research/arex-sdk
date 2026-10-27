@@ -3349,8 +3349,8 @@
           "max_characters": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 131072,
-            "default": 12000
+            "maximum": 600000,
+            "default": 20000
           }
         },
         "required": [

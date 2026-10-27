@@ -28,26 +28,28 @@ Every call accepts `signal?: AbortSignal` and `timeoutMs?: number`. Retries are 
 | `research.wait(runId, { pollIntervalMs?, timeoutMs? })` | `CompletedResearchRun` | polls `GET` |
 | `research.run(query, { mode?, pollIntervalMs?, timeoutMs? })` | `CompletedResearchRun` | create, then polls if non-terminal |
 
-### Option limits
+### Options
 
-| Option | Type | Default | Limit |
+The server owns value limits for request fields (lengths, ranges, allowed values) and answers a value past one with `InvalidRequestError` (`status: 400`, `param`); see the [API reference](https://www.arex-research.com/platform/docs). The client checks only what it needs to build a request.
+
+| Option | Type | Default | Client check |
 | --- | --- | --- | --- |
-| `query` | `string` | | 1 to 2000 code points |
-| `limit` | `number` | server: 10 | integer 1 to 10 |
+| `query` | `string` | | string |
+| `limit` | `number` | server default | integer |
 | `publishedAfter` | `string` | | UTC ISO-8601 timestamp (`…Z`); sent as `published_after` |
 | `publishedBefore` | `string` | | UTC ISO-8601 timestamp (`…Z`), after `publishedAfter` at whole-second granularity; sent as `published_before` |
-| `url` | `string` | | absolute `http:`/`https:`, at most 8192 characters, no credentials |
-| `tier` | `"auto" \| "flex"` | `"auto"` | `flex` buys the longer server deadline (60s vs 20s) |
+| `url` | `string` | | absolute `http:`/`https:`, no credentials |
+| `tier` | `"auto" \| "flex"` | `"auto"` | string; `flex` buys the longer server deadline |
 | `livecrawl` | `boolean` | `false` | fetch now instead of serving a cached copy |
-| `livecrawlTimeoutMs` | `number` | server: auto 20000, flex 90000 | integer 1000 to 90000; only with `livecrawl: true`; sent as `livecrawl_timeout_ms` |
-| `maxCharacters` | `number` | server: 12000 | integer 1 to 131072; sent as `max_characters` |
-| `mode` | `"fast" \| "deep" \| "auto"` | `"auto"` | the server resolves `auto` to a tier |
+| `livecrawlTimeoutMs` | `number` | server default | integer; only with `livecrawl: true`; sent as `livecrawl_timeout_ms` |
+| `maxCharacters` | `number` | server default | integer; sent as `max_characters` |
+| `mode` | `"fast" \| "deep" \| "auto"` | `"auto"` | string; the server resolves `auto` to a tier |
 | `detach` | `boolean` | `false` | send `Prefer: respond-async` on `POST /v1/research` to return `202` immediately after admission |
 | `runId` | `string` | | UUID |
 | `pollIntervalMs` | `number` | 2000 | positive, at most 2147483647; `Retry-After` wins when present |
 | `timeoutMs` (wait/run) | `number` | fast 150000, else 180000 | positive, at most 2147483647; bounds the whole poll loop |
 
-Violations throw `InvalidRequestError` with `status: 0` and `param` before any request. Server-owned bounds are generated from [OpenAPI](../../openapi/arex-v1.json) into `WIRE_LIMITS` rather than hand-written constants.
+A failed client check throws `InvalidRequestError` with `status: 0` and `param` before any request.
 
 ## Result shapes
 
@@ -92,10 +94,10 @@ Extra response fields are ignored. New API error codes surface as `ArexApiError`
 
 - `isArexApiKey(value)`, `AREX_API_KEY_PREFIX`, `AREX_API_KEY_SECRET_LENGTH`.
 - `ResearchResource`: the `arex.research` resource class.
-- `validateSearch`, `validateContents`, `validateResearchCreate`, `validateRunId`, `validateResearchWait`: the same checks the calls run, for use before queueing work.
+- `validateSearch`, `validateContents`, `validateResearchCreate`, `validateRunId`, `validateResearchWait`: the same client checks the calls run, for use before queueing work. They do not check server-owned limits.
 - `apiErrorFromResponse(status, body, headers)`: the status-and-code to class mapping above; returns `ArexNetworkError` for an envelope-less body.
 - `DEFAULT_BASE_URL`: the default API origin.
-- `WIRE_LIMITS`: the generated server-owned constraint table from [OpenAPI](../../openapi/arex-v1.json).
+- `WIRE_LIMITS`: the server-owned constraint table generated from the [OpenAPI](../../openapi/arex-v1.json) copy this release was built with. The server may since have changed a limit; the client does not enforce it.
 - Types: `ArexOptions`, `ArexApiErrorInit`, `CallOptions`, `SearchOptions`, `ContentsOptions`, `ResearchCreateOptions`, `ResearchWaitOptions`, `ResearchRunOptions`, `FetchLike`, `ContentsTier`, `ResearchMode`, `ResearchModeRequest`, `ResearchStatus`, `ArexErrorCode`, `ArexApiErrorCode`, `ResearchFailureCode`, `ResearchResult`, `ResearchSource`, and the result shapes above.
 
 Client-policy defaults are also exported for convenience and may change in minor versions. See [CONTRACT.md](../../CONTRACT.md#sdk-owned-defaults) for the current policy.

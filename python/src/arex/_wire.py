@@ -85,8 +85,8 @@ class SearchResponse(TypedDict, total=False):
 
 WIRE_LIMITS: dict[str, Any] = {'ContentsRequest': {'livecrawl': {'default': False},
                      'livecrawl_timeout_ms': {'maximum': 90000, 'minimum': 1000},
-                     'max_characters': {'default': 12000,
-                                        'maximum': 131072,
+                     'max_characters': {'default': 20000,
+                                        'maximum': 600000,
                                         'minimum': 1},
                      'tier': {'default': 'auto', 'enum': ['auto', 'flex']},
                      'url': {'maxLength': 8192,

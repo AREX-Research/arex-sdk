@@ -32,26 +32,28 @@ Synchronous on `Arex`, coroutines on `AsyncArex`.
 | `research.wait(run_id, *, poll_interval_ms=2000, timeout_ms=None)` | `ResearchRun` with `status == "completed"` | polls `GET` |
 | `research.run(query, *, mode=None, poll_interval_ms=2000, timeout_ms=None)` | `ResearchRun` with `status == "completed"` | create, then polls if non-terminal |
 
-### Option limits
+### Options
 
-| Option | Type | Default | Limit |
+The server owns value limits for request fields (lengths, ranges, allowed values) and answers a value past one with `InvalidRequestError` (`status == 400`, `param`); see the [API reference](https://www.arex-research.com/platform/docs). The client checks only what it needs to build a request.
+
+| Option | Type | Default | Client check |
 | --- | --- | --- | --- |
-| `query` | `str` | | 1 to 2000 code points |
-| `limit` | `int` | server: 10 | 1 to 10 |
+| `query` | `str` | | string |
+| `limit` | `int` | server default | integer |
 | `published_after` | `str` | | UTC ISO-8601 timestamp (`…Z`) |
 | `published_before` | `str` | | UTC ISO-8601 timestamp (`…Z`), after `published_after` at whole-second granularity |
-| `url` | `str` | | absolute `http`/`https`, at most 8192 characters, no credentials |
-| `tier` | `Literal["auto", "flex"]` | `"auto"` | `flex` buys the longer server deadline (60s vs 20s) |
+| `url` | `str` | | absolute `http`/`https`, no credentials |
+| `tier` | `Literal["auto", "flex"]` | `"auto"` | string; `flex` buys the longer server deadline |
 | `livecrawl` | `bool` | `False` | fetch now instead of serving a cached copy |
-| `livecrawl_timeout_ms` | `int` | server: auto 20000, flex 90000 | 1000 to 90000; only with `livecrawl=True`; sent as `livecrawl_timeout_ms` |
-| `max_characters` | `int` | server: 12000 | 1 to 131072 |
-| `mode` | `Literal["fast", "deep", "auto"]` | `"auto"` | the server resolves `auto` to a tier |
+| `livecrawl_timeout_ms` | `int` | server default | integer; only with `livecrawl=True` |
+| `max_characters` | `int` | server default | integer |
+| `mode` | `Literal["fast", "deep", "auto"]` | `"auto"` | string; the server resolves `auto` to a tier |
 | `detach` | `bool` | `False` | send `Prefer: respond-async` on `POST /v1/research` to return `202` immediately after admission |
 | `run_id` | `str` | | UUID |
 | `poll_interval_ms` | `int` | 2000 | 1 to 2147483647; `Retry-After` wins when present |
 | `timeout_ms` (wait/run) | `int` | fast 150000, else 180000 | 1 to 2147483647; bounds the whole poll loop |
 
-Violations raise `InvalidRequestError` with `status == 0` before any request. A per-call `timeout_ms` (every call, and `wait`/`run`) must be a positive integer, not a `bool`, of at most 2147483647; the constructor applies the same rule to `timeout_ms` but raises `ValueError`.
+A failed client check raises `InvalidRequestError` with `status == 0` before any request. A per-call `timeout_ms` (every call, and `wait`/`run`) must be a positive integer, not a `bool`, of at most 2147483647; the constructor applies the same rule to `timeout_ms` but raises `ValueError`.
 
 ## Models
 
@@ -71,7 +73,7 @@ Type aliases: `ContentsTier`, `ResearchMode`, `ResearchModeRequest`, `ResearchSt
 
 ### Forward compatibility
 
-Extra response fields are ignored. New API error codes remain `ArexApiError` with their original `code`. Unknown nonempty Research modes, requested modes, failure codes, and statuses pass through at runtime, even though the `Literal` annotations list only known values. Unknown statuses are in progress: they retain `message`, require neither `result` nor `error`, and keep `wait`/`run` polling under the usual deadline. Empty or mistyped values for these fields remain invalid responses; request mode validation stays strict.
+Extra response fields are ignored. New API error codes remain `ArexApiError` with their original `code`. Unknown nonempty Research modes, requested modes, failure codes, and statuses pass through at runtime, even though the `Literal` annotations list only known values. Unknown statuses are in progress: they retain `message`, require neither `result` nor `error`, and keep `wait`/`run` polling under the usual deadline. Empty or mistyped values for these fields remain invalid responses; the server decides which request modes it accepts.
 
 ## Errors
 

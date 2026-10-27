@@ -232,7 +232,10 @@ try {
 
 	await check("client-side validation fails before any request", async () => {
 		script({ "POST /v1/search": ["search.ok"] });
-		await assert.rejects(() => arex.search(""), sdk.InvalidRequestError);
+		await assert.rejects(
+			() => arex.search("agents", { limit: 1.5 }),
+			sdk.InvalidRequestError,
+		);
 		assert.equal(requests.length, 0);
 	});
 } finally {

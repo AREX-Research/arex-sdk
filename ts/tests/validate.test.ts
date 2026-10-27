@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import { Arex, type ResearchCreateOptions } from "../src/index.js";
-import { WIRE_LIMITS } from "../src/wire.js";
 import { stubFetch, TEST_API_KEY, TEST_RUN_ID } from "./fixtures.js";
 
 function client() {
@@ -23,20 +22,84 @@ async function rejectsLocally(
 	expect(fetch.calls).toEqual([]);
 }
 
+/** The server's answer for a value past one of its limits. */
+async function sentAndRejectedByServer(
+	run: (arex: Arex) => Promise<unknown>,
+	field: string,
+): Promise<void> {
+	const fetch = stubFetch("error.invalid-request");
+	const arex = new Arex({ apiKey: TEST_API_KEY, fetch });
+	await expect(run(arex)).rejects.toMatchObject({
+		name: "InvalidRequestError",
+		status: 400,
+		code: "invalid_request",
+		requestId: "req_9f1c2e7a",
+	});
+	expect(fetch.calls).toHaveLength(1);
+	expect(fetch.calls[0]?.body).toHaveProperty(field);
+}
+
 describe("client-side validation", () => {
-	it("rejects search query and limit bounds before sending", async () => {
-		await rejectsLocally((arex) => arex.search(""), "query");
-		await rejectsLocally(
-			(arex) => arex.search("x".repeat(WIRE_LIMITS.search.query.maxLength + 1)),
+	it("leaves value limits to the server and surfaces its rejection", async () => {
+		await sentAndRejectedByServer((arex) => arex.search(""), "query");
+		await sentAndRejectedByServer(
+			(arex) => arex.search("x".repeat(2001)),
 			"query",
 		);
-		for (const limit of [
-			WIRE_LIMITS.search.limit.minimum - 1,
-			WIRE_LIMITS.search.limit.maximum + 1,
-			1.5,
-		]) {
-			await rejectsLocally((arex) => arex.search("q", { limit }), "limit");
-		}
+		await sentAndRejectedByServer(
+			(arex) => arex.search("q", { limit: 0 }),
+			"limit",
+		);
+		await sentAndRejectedByServer(
+			(arex) => arex.contents(`https://a.test/${"p".repeat(8192)}`),
+			"url",
+		);
+		await sentAndRejectedByServer(
+			(arex) =>
+				arex.contents("https://example.org", {
+					tier: "priority",
+				} as never),
+			"tier",
+		);
+		await sentAndRejectedByServer(
+			(arex) =>
+				arex.contents("https://example.org", {
+					livecrawl: true,
+					livecrawlTimeoutMs: 999,
+				}),
+			"livecrawl_timeout_ms",
+		);
+		await sentAndRejectedByServer(
+			(arex) =>
+				arex.contents("https://example.org", { maxCharacters: 10 ** 9 }),
+			"max_characters",
+		);
+		await sentAndRejectedByServer(
+			(arex) => arex.research.create("x".repeat(2001)),
+			"query",
+		);
+		await sentAndRejectedByServer(
+			(arex) =>
+				arex.research.create("q", {
+					mode: "turbo",
+				} as unknown as ResearchCreateOptions),
+			"mode",
+		);
+	});
+
+	it("rejects arguments of the wrong type before sending", async () => {
+		await rejectsLocally((arex) => arex.search("q", { limit: 1.5 }), "limit");
+		await rejectsLocally(
+			(arex) =>
+				arex.contents("https://example.org", {
+					maxCharacters: "600" as unknown as number,
+				}),
+			"maxCharacters",
+		);
+		await rejectsLocally(
+			(arex) => arex.search(42 as unknown as string),
+			"query",
+		);
 	});
 
 	it("validates search publication bounds before sending", async () => {
@@ -85,77 +148,31 @@ describe("client-side validation", () => {
 		});
 	});
 
-	it("counts query length in code points rather than UTF-16 units", async () => {
-		const { arex, fetch } = client();
-		const query = "\u{1F600}".repeat(WIRE_LIMITS.search.query.maxLength);
-		await arex.search(query);
-		expect(fetch.calls[0]?.body).toEqual({ query });
-		await rejectsLocally((sdk) => sdk.search(`${query}x`), "query");
-	});
-
-	it("rejects invalid contents URLs and content bounds", async () => {
+	it("rejects URLs a request cannot be built from", async () => {
 		for (const url of [
 			"",
-			`https://a.test/${"p".repeat(WIRE_LIMITS.contents.url.maxLength)}`,
 			"ftp://example.org",
 			"/relative",
 			"https://user:pw@example.org",
 		]) {
 			await rejectsLocally((arex) => arex.contents(url), "url");
 		}
-		for (const maxCharacters of [
-			WIRE_LIMITS.contents.maxCharacters.minimum - 1,
-			WIRE_LIMITS.contents.maxCharacters.maximum + 1,
-		]) {
-			await rejectsLocally(
-				(arex) => arex.contents("https://example.org", { maxCharacters }),
-				"maxCharacters",
-			);
-		}
 	});
 
-	it("requires livecrawl and enforces its timeout bounds", async () => {
+	it("requires livecrawl for a livecrawl timeout", async () => {
 		for (const livecrawl of [undefined, false]) {
 			await rejectsLocally(
 				(arex) =>
 					arex.contents("https://example.org", {
 						...(livecrawl !== undefined ? { livecrawl } : {}),
-						livecrawlTimeoutMs: WIRE_LIMITS.contents.livecrawlTimeoutMs.minimum,
-					}),
-				"livecrawlTimeoutMs",
-			);
-		}
-		for (const livecrawlTimeoutMs of [
-			WIRE_LIMITS.contents.livecrawlTimeoutMs.minimum - 1,
-			WIRE_LIMITS.contents.livecrawlTimeoutMs.maximum + 1,
-		]) {
-			await rejectsLocally(
-				(arex) =>
-					arex.contents("https://example.org", {
-						livecrawl: true,
-						livecrawlTimeoutMs,
+						livecrawlTimeoutMs: 5000,
 					}),
 				"livecrawlTimeoutMs",
 			);
 		}
 	});
 
-	it("validates research query and mode", async () => {
-		await rejectsLocally((arex) => arex.research.create(""), "query");
-		await rejectsLocally(
-			(arex) =>
-				arex.research.create(
-					"x".repeat(WIRE_LIMITS.research.query.maxLength + 1),
-				),
-			"query",
-		);
-		await rejectsLocally(
-			(arex) =>
-				arex.research.create("q", {
-					mode: "turbo",
-				} as unknown as ResearchCreateOptions),
-			"mode",
-		);
+	it("requires a boolean research detach", async () => {
 		await rejectsLocally(
 			(arex) =>
 				arex.research.create("q", {

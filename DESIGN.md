@@ -16,11 +16,11 @@ The repository contains two SDKs for the same public API: TypeScript (`Arex`) an
 
 The TypeScript transport seam is WHATWG `fetch`; the Python transport seam is `httpx`. Inject these for proxies, connection pooling, or tests. Do not introduce a second plugin layer. SDK-owned Python clients are closed by their context managers; injected clients remain caller-owned.
 
-Keep protocol handling in the transport module and research state transitions in the research module. Validate inputs before the network and validate untrusted responses while mapping them into public models. A cast to a generated wire type is not runtime validation.
+Keep protocol handling in the transport module and research state transitions in the research module. Before the network, check only what building a request needs (argument types, URL shape, SDK-owned options such as timeouts and poll intervals); never enforce server-owned value limits, which the server reports as `invalid_request` and can change without an SDK release. Validate untrusted responses while mapping them into public models. A cast to a generated wire type is not runtime validation.
 
 ## Sources of truth
 
-- `openapi/arex-v1.json` owns server fields, limits, error codes, and headers. It is checked in so contributors can build without fetching external sources.
+- `openapi/arex-v1.json` owns server fields, limits, error codes, and headers; the SDK reads limits from it for documentation and response validation only, never to reject a request. It is checked in so contributors can build without fetching external sources.
 - [CONTRACT.md](CONTRACT.md) records SDK-owned defaults and the contract update procedure.
 - `ts/docs/api.md` and `python/docs/api.md` describe the public interface; `docs/behavior.md` in each package explains operational behavior and recovery.
 - Public types live in source, not in a second hand-maintained inventory here.

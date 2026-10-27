@@ -25,7 +25,6 @@ __all__ = [
     "CONTENTS_TIERS",
     "DEEP_POLL_TIMEOUT_MS",
     "DEFAULT_BASE_URL",
-    "DEFAULT_CONTENTS_MAX_CHARACTERS",
     "DEFAULT_CONTENTS_TIER",
     "DEFAULT_LIVECRAWL_TIMEOUT_AUTO_MS",
     "DEFAULT_LIVECRAWL_TIMEOUT_FLEX_MS",
@@ -65,9 +64,6 @@ CONTENTS_TIERS = get_args(ContentsTier)
 DEFAULT_CONTENTS_TIER: ContentsTier = WIRE_LIMITS["ContentsRequest"]["tier"]["default"]
 DEFAULT_LIVECRAWL_TIMEOUT_AUTO_MS = 20000
 DEFAULT_LIVECRAWL_TIMEOUT_FLEX_MS = 90000
-DEFAULT_CONTENTS_MAX_CHARACTERS = WIRE_LIMITS["ContentsRequest"]["max_characters"][
-    "default"
-]
 RESEARCH_MODES = get_args(ResearchModeRequest)
 DEFAULT_RESEARCH_MODE: ResearchModeRequest = WIRE_LIMITS["ResearchCreateRequest"][
     "mode"

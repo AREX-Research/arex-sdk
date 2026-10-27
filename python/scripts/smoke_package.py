@@ -139,7 +139,6 @@ def main(base_url: str) -> None:
             "ContentsTier",
             "CONTENTS_TIERS",
             "DEFAULT_CONTENTS_TIER",
-            "DEFAULT_CONTENTS_MAX_CHARACTERS",
             "CONTENTS_AUTO_TIMEOUT_MS",
             "CONTENTS_FLEX_TIMEOUT_MS",
             "ResearchRun",
@@ -151,6 +150,7 @@ def main(base_url: str) -> None:
             "CreditWeek",
             "CreditUsage",
             "USAGE_TIMEOUT_MS",
+            "DEFAULT_CONTENTS_MAX_CHARACTERS",
         ):
             assert not hasattr(arex, name), f"{name} remains public"
         assert not hasattr(Arex, "usage")
@@ -248,7 +248,10 @@ def main(base_url: str) -> None:
 
     def validation() -> None:
         script({"POST /v1/search": ["search.ok"]})
-        expect_raises(InvalidRequestError, lambda: arex_client.search(""))
+        expect_raises(
+            InvalidRequestError,
+            lambda: arex_client.search("agents", limit=1.5),  # type: ignore[arg-type]
+        )
         assert not requests
 
     check("client-side validation fails before any request", validation)

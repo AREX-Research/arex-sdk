@@ -4,7 +4,7 @@ The rules the client follows, and the reason for each. Signatures are in the [AP
 
 ## Validation before the network
 
-The client checks limits generated from the checked-in OpenAPI contract and raises `InvalidRequestError` (`status == 0`) before sending invalid input. Both `timeout_ms` and `poll_interval_ms` must be integers from 1 through 2147483647, excluding booleans. `run` checks these settings before creating a run. Server errors retain their message, request ID and optional field-level `param`.
+The client checks only what it needs to build a request: argument types, a well-formed `http(s)` URL without credentials, publication timestamps, and the options it owns. A failed check raises `InvalidRequestError` (`status == 0`) before sending. Value limits on request fields (lengths, ranges, allowed values) belong to the server, which can change them without a new SDK release; a value past one is sent and the server's `400 invalid_request` surfaces as `InvalidRequestError`. Both `timeout_ms` and `poll_interval_ms` must be integers from 1 through 2147483647, excluding booleans. `run` checks these settings before creating a run. Server errors retain their message, request ID and optional field-level `param`.
 
 Research responses require a result when completed and an error when failed; missing or malformed terminal payloads raise `ArexNetworkError("invalid_response")` in direct lifecycle calls as well as polling. `message` is retained on in-progress states; `result` and `error` are retained only in their matching terminal states.
 

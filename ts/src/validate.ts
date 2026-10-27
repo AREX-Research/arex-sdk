@@ -6,7 +6,6 @@ import type {
 	ResearchWaitOptions,
 	SearchOptions,
 } from "./types.js";
-import { WIRE_LIMITS } from "./wire.js";
 
 /** UUID v1 through v8, matching the server's `parseRunId`. */
 const RUN_ID_PATTERN =
@@ -28,19 +27,8 @@ export function validateSearch(
 	query: string,
 	options: SearchOptions = {},
 ): void {
-	checkQuery(
-		query,
-		WIRE_LIMITS.search.query.minLength,
-		WIRE_LIMITS.search.query.maxLength,
-	);
-	if (options.limit !== undefined) {
-		checkInteger(
-			options.limit,
-			"limit",
-			WIRE_LIMITS.search.limit.minimum,
-			WIRE_LIMITS.search.limit.maximum,
-		);
-	}
+	checkString(query, "query");
+	if (options.limit !== undefined) checkInteger(options.limit, "limit");
 	const afterSeconds =
 		options.publishedAfter !== undefined
 			? checkUtcTimestamp(options.publishedAfter, "publishedAfter")
@@ -63,16 +51,7 @@ export function validateSearch(
 }
 
 export function validateContents(url: string, options: ContentsOptions): void {
-	if (
-		typeof url !== "string" ||
-		url.length === 0 ||
-		url.length > WIRE_LIMITS.contents.url.maxLength
-	) {
-		fail(
-			`url must be 1 to ${WIRE_LIMITS.contents.url.maxLength} characters`,
-			"url",
-		);
-	}
+	checkString(url, "url");
 
 	let parsed: URL;
 	try {
@@ -87,17 +66,7 @@ export function validateContents(url: string, options: ContentsOptions): void {
 		fail("url must not contain credentials", "url");
 	}
 
-	if (
-		options.tier !== undefined &&
-		!(WIRE_LIMITS.contents.tier.enum as readonly string[]).includes(
-			options.tier,
-		)
-	) {
-		fail(
-			`tier must be one of ${WIRE_LIMITS.contents.tier.enum.join(", ")}`,
-			"tier",
-		);
-	}
+	if (options.tier !== undefined) checkString(options.tier, "tier");
 	if (
 		options.livecrawl !== undefined &&
 		typeof options.livecrawl !== "boolean"
@@ -108,20 +77,10 @@ export function validateContents(url: string, options: ContentsOptions): void {
 		if (options.livecrawl !== true) {
 			fail("livecrawlTimeoutMs requires livecrawl: true", "livecrawlTimeoutMs");
 		}
-		checkInteger(
-			options.livecrawlTimeoutMs,
-			"livecrawlTimeoutMs",
-			WIRE_LIMITS.contents.livecrawlTimeoutMs.minimum,
-			WIRE_LIMITS.contents.livecrawlTimeoutMs.maximum,
-		);
+		checkInteger(options.livecrawlTimeoutMs, "livecrawlTimeoutMs");
 	}
 	if (options.maxCharacters !== undefined) {
-		checkInteger(
-			options.maxCharacters,
-			"maxCharacters",
-			WIRE_LIMITS.contents.maxCharacters.minimum,
-			WIRE_LIMITS.contents.maxCharacters.maximum,
-		);
+		checkInteger(options.maxCharacters, "maxCharacters");
 	}
 	validateCallOptions(options);
 }
@@ -130,22 +89,8 @@ export function validateResearchCreate(
 	query: string,
 	options: ResearchCreateOptions,
 ): void {
-	checkQuery(
-		query,
-		WIRE_LIMITS.research.query.minLength,
-		WIRE_LIMITS.research.query.maxLength,
-	);
-	if (
-		options.mode !== undefined &&
-		!(WIRE_LIMITS.research.mode.enum as readonly string[]).includes(
-			options.mode,
-		)
-	) {
-		fail(
-			`mode must be one of ${WIRE_LIMITS.research.mode.enum.join(", ")}`,
-			"mode",
-		);
-	}
+	checkString(query, "query");
+	if (options.mode !== undefined) checkString(options.mode, "mode");
 	if (options.detach !== undefined && typeof options.detach !== "boolean") {
 		fail("detach must be a boolean", "detach");
 	}
@@ -164,26 +109,12 @@ export function validateResearchWait(options: ResearchWaitOptions): void {
 	checkPositive(options.timeoutMs, "timeoutMs");
 }
 
-/** The server counts code points, so surrogate pairs cost one character. */
-function checkQuery(query: string, min: number, max: number): void {
-	let length = 0;
-	if (typeof query === "string") {
-		for (const _character of query) length++;
-	}
-	if (length < min || length > max) {
-		fail(`query must be ${min} to ${max} characters`, "query");
-	}
+function checkString(value: string, field: string): void {
+	if (typeof value !== "string") fail(`${field} must be a string`, field);
 }
 
-function checkInteger(
-	value: number,
-	field: string,
-	min: number,
-	max: number,
-): void {
-	if (!Number.isInteger(value) || value < min || value > max) {
-		fail(`${field} must be an integer between ${min} and ${max}`, field);
-	}
+function checkInteger(value: number, field: string): void {
+	if (!Number.isInteger(value)) fail(`${field} must be an integer`, field);
 }
 
 function checkPositive(value: number | undefined, field: string): void {
